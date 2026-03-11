@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>sozialkompass.lu – Alle Hilfsangebote Luxemburgs</title>
+<meta name="description" content="Finde schnell und einfach Hilfsangebote in Luxemburg. Kostenlos, anonym, mehrsprachig.">
+<meta name="theme-color" content="#0D9488">
+<meta property="og:title" content="sozialkompass.lu – Alle Hilfsangebote Luxemburgs">
+<meta property="og:description" content="Finde schnell Hilfe in Luxemburg. Mehrsprachig, kostenlos, anonym.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B2A4A; --teal: #0D9488; --teal-light: #14B8A6;
+    --mint: #A7F3D0; --warm-white: #FBF9F7; --cream: #F0FDFA;
+    --dark-text: #1E293B; --muted: #64748B; --light-muted: #94A3B8;
+    --red: #EF4444; --red-bg: #FEE2E2; --red-text: #B91C1C;
+    --yellow: #F59E0B; --yellow-bg: #FEF3C7; --yellow-text: #92400E;
+    --green: #10B981; --green-bg: #D1FAE5; --green-text: #065F46;
+    --border: #E2E8F0; --card-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  body {
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background: linear-gradient(180deg, var(--cream) 0%, var(--warm-white) 40%);
+    color: var(--dark-text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 540px; margin: 0 auto; padding: 0 16px 40px; }
+
+  /* Header */
+  .header { padding-top: 24px; margin-bottom: 20px; animation: fadeDown 0.5s ease; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-teal { color: var(--teal); }
+  .logo-navy { color: var(--navy); }
+  .tagline { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Language picker */
+  .lang-wrap { position: relative; }
+  .lang-btn {
+    background: white; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--navy);
+  }
+  .lang-dropdown {
+    position: absolute; right: 0; top: 38px; background: white;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 100; overflow: hidden; min-width: 100px;
+    display: none;
+  }
+  .lang-dropdown.open { display: block; }
+  .lang-option {
+    display: block; width: 100%; padding: 8px 14px; border: none; background: transparent;
+    font-size: 13px; cursor: pointer; text-align: left; color: var(--navy);
+  }
+  .lang-option:hover { background: var(--cream); }
+  .lang-option.active { font-weight: 700; background: var(--cream); }
+
+  /* Emergency bar */
+  .emergency {
+    margin-top: 14px; background: linear-gradient(135deg, var(--red-bg), #FECACA);
+    border-radius: 10px; padding: 10px 16px; display: flex;
+    justify-content: space-between; align-items: center;
+    font-size: 14px; font-weight: 600; color: #991B1B;
+  }
+  .emergency-call {
+    background: var(--red); color: white; border-radius: 8px; padding: 4px 16px;
+    font-weight: 800; font-size: 18px; text-decoration: none; letter-spacing: 1px;
+  }
+
+  /* Search */
+  .search-wrap { position: relative; margin-bottom: 16px; animation: fadeIn 0.5s 0.15s ease both; }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+  .search-input {
+    width: 100%; padding: 14px 40px 14px 42px; border: 2px solid var(--border);
+    border-radius: 12px; font-size: 15px; outline: none; background: white; color: var(--navy);
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--teal); }
+  .search-clear {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: #F1F5F9; border: none; border-radius: 50%; width: 24px; height: 24px;
+    font-size: 12px; cursor: pointer; color: var(--muted); display: none; align-items: center; justify-content: center;
+  }
+  .search-clear.visible { display: flex; }
+
+  /* Urgency filters */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; animation: fadeIn 0.5s 0.25s ease both; }
+  .urgency-btn {
+    padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    border: 2px solid var(--border); background: white; color: var(--muted); font-weight: 500;
+  }
+  .urgency-btn.active-all { border-color: var(--muted); background: #F1F5F9; color: var(--muted); font-weight: 700; }
+  .urgency-btn.active-red { border-color: var(--red-text); background: var(--red-bg); color: var(--red-text); font-weight: 700; }
+  .urgency-btn.active-yellow { border-color: var(--yellow-text); background: var(--yellow-bg); color: var(--yellow-text); font-weight: 700; }
+  .urgency-btn.active-green { border-color: var(--green-text); background: var(--green-bg); color: var(--green-text); font-weight: 700; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-green { background: var(--green); }
+
+  /* Topic chips */
+  .topics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; animation: fadeIn 0.5s 0.35s ease both; }
+  .topic-chip {
+    padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
+    border: 1.5px solid var(--border); background: white; color: var(--navy);
+    font-weight: 500; transition: all 0.2s; white-space: nowrap;
+  }
+  .topic-chip.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+  /* Results */
+  .results-header { margin-bottom: 10px; font-size: 13px; color: var(--light-muted); font-weight: 500; }
+  .no-results { text-align: center; padding: 40px; color: var(--light-muted); font-size: 14px; }
+
+  /* Service card */
+  .card {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 10px;
+    box-shadow: var(--card-shadow); cursor: pointer; border: none; width: 100%;
+    text-align: left; transition: all 0.25s ease; border-left: 4px solid transparent;
+    animation: fadeUp 0.4s ease both;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+  .card.border-red { border-left-color: var(--red); }
+  .card.border-yellow { border-left-color: var(--yellow); }
+  .card.border-green { border-left-color: var(--green); }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .card-name { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .urgency-badge {
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-red { background: var(--red-bg); color: var(--red-text); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow-text); }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 6px; }
+  .card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--light-muted); }
+  .card-phone { font-weight: 600; color: var(--teal); }
+  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .mini-tag {
+    background: var(--cream); color: var(--teal); padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+
+  /* Detail view */
+  .detail { display: none; }
+  .detail.open { display: block; }
+  .list-view.hidden { display: none; }
+  .back-btn {
+    background: none; border: none; color: var(--teal); font-size: 15px;
+    font-weight: 600; cursor: pointer; padding: 20px 0 12px;
+  }
+  .detail-card {
+    background: white; border-radius: 14px; padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); animation: fadeUp 0.3s ease;
+  }
+  .detail-card.top-red { border-top: 4px solid var(--red); }
+  .detail-card.top-yellow { border-top: 4px solid var(--yellow); }
+  .detail-card.top-green { border-top: 4px solid var(--green); }
+  .detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .detail-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .detail-name { font-size: 22px; font-weight: 800; color: var(--navy); }
+  .detail-desc { font-size: 15px; color: #475569; line-height: 1.65; margin-bottom: 20px; }
+  .call-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    color: white; border-radius: 12px; padding: 14px 20px; font-size: 17px;
+    font-weight: 700; text-decoration: none; margin-bottom: 10px; text-align: center;
+  }
+  .web-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--cream); color: var(--teal); border-radius: 12px; padding: 12px 20px;
+    font-size: 15px; font-weight: 600; text-decoration: none; margin-bottom: 20px;
+    border: 1.5px solid #99F6E4; text-align: center;
+  }
+  .meta-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .meta-icon { font-size: 16px; width: 24px; text-align: center; }
+  .meta-val { font-size: 14px; color: #475569; }
+  .badge-anon { background: #EEF2FF; color: #3730A3; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+  .badge-free { background: var(--green-bg); color: var(--green-text); padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+  .detail-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .detail-topic { background: var(--cream); color: var(--teal); padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; }
+
+  /* Footer */
+  .footer { margin-top: 32px; text-align: center; }
+  .footer-tagline { font-size: 14px; color: var(--teal); font-weight: 600; margin-bottom: 6px; }
+  .footer-demo { font-size: 12px; color: var(--light-muted); font-style: italic; }
+
+  /* Animations */
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  de: { subtitle:"Alle Hilfsangebote Luxemburgs", searchPlaceholder:"Was brauchst du? (z.B. Geld, Krise, Wohnung...)", urgent:"Notfall", soon:"Dringend", info:"Beratung", all:"Alle", call:"Anrufen", website:"Webseite", anonymous:"Anonym", free:"Kostenlos", results:"Ergebnisse", noResults:"Keine Ergebnisse gefunden. Versuche andere Suchbegriffe.", emergency:"Notruf: 112", tagline:"Einfach. Mehrsprachig. Kostenlos.", demoNotice:"Demo-Version – Echte Daten folgen.", back:"Zurück" },
+  fr: { subtitle:"Tous les services d'aide au Luxembourg", searchPlaceholder:"De quoi avez-vous besoin ? (ex. argent, crise, logement...)", urgent:"Urgence", soon:"Urgent", info:"Conseil", all:"Tous", call:"Appeler", website:"Site web", anonymous:"Anonyme", free:"Gratuit", results:"Résultats", noResults:"Aucun résultat trouvé. Essayez d'autres termes.", emergency:"Urgences : 112", tagline:"Simple. Multilingue. Gratuit.", demoNotice:"Version démo – données réelles à venir.", back:"Retour" },
+  en: { subtitle:"All help services in Luxembourg", searchPlaceholder:"What do you need? (e.g. money, crisis, housing...)", urgent:"Emergency", soon:"Urgent", info:"Advice", all:"All", call:"Call", website:"Website", anonymous:"Anonymous", free:"Free", results:"Results", noResults:"No results found. Try different search terms.", emergency:"Emergency: 112", tagline:"Simple. Multilingual. Free.", demoNotice:"Demo version – real data coming soon.", back:"Back" },
+  lu: { subtitle:"All Hëllefsofferen zu Lëtzebuerg", searchPlaceholder:"Wat brauchs du? (z.B. Suen, Kris, Wunneng...)", urgent:"Noutruff", soon:"Dréngend", info:"Berodung", all:"All", call:"Uruffen", website:"Websäit", anonymous:"Anonym", free:"Gratis", results:"Resultater", noResults:"Keng Resultater fonnt.", emergency:"Noutruff: 112", tagline:"Einfach. Méisproocheg. Gratis.", demoNotice:"Demo-Versioun – Richteg Donnéeë kommen.", back:"Zréck" },
+  pt: { subtitle:"Todos os serviços de ajuda no Luxemburgo", searchPlaceholder:"O que precisa? (ex. dinheiro, crise, habitação...)", urgent:"Emergência", soon:"Urgente", info:"Aconselhamento", all:"Todos", call:"Ligar", website:"Website", anonymous:"Anónimo", free:"Gratuito", results:"Resultados", noResults:"Nenhum resultado encontrado.", emergency:"Emergência: 112", tagline:"Simples. Multilingue. Gratuito.", demoNotice:"Versão demo – dados reais em breve.", back:"Voltar" },
+};
+
+const TOPIC_LABELS = {
+  de: { crisis:"Krise", money:"Geld", family:"Familie", migration:"Migration", housing:"Wohnung", health:"Gesundheit", addiction:"Sucht", violence:"Gewalt", youth:"Jugend" },
+  fr: { crisis:"Crise", money:"Argent", family:"Famille", migration:"Migration", housing:"Logement", health:"Santé", addiction:"Addiction", violence:"Violence", youth:"Jeunesse" },
+  en: { crisis:"Crisis", money:"Money", family:"Family", migration:"Migration", housing:"Housing", health:"Health", addiction:"Addiction", violence:"Violence", youth:"Youth" },
+  lu: { crisis:"Kris", money:"Suen", family:"Famill", migration:"Migratioun", housing:"Wunneng", health:"Gesondheet", addiction:"Sucht", violence:"Gewalt", youth:"Jugend" },
+  pt: { crisis:"Crise", money:"Dinheiro", family:"Família", migration:"Migração", housing:"Habitação", health:"Saúde", addiction:"Dependência", violence:"Violência", youth:"Juventude" },
+};
+
+const TOPIC_ICONS = { crisis:"🆘", money:"💰", family:"👨‍👩‍👧", migration:"🌍", housing:"🏠", health:"🏥", addiction:"🫂", violence:"🛡️", youth:"👶" };
+const LANG_FLAGS = { de:"🇩🇪", fr:"🇫🇷", en:"🇬🇧", lu:"🇱🇺", pt:"🇵🇹" };
+
+const SERVICES = [
+  { id:1, name:"SOS Détresse", phone:"454545", desc:{ de:"Anonyme Telefonhilfe bei psychischen Krisen, Suizidgedanken und emotionaler Not. Rund um die Uhr erreichbar.", fr:"Aide téléphonique anonyme en cas de crise psychologique, 24/7.", en:"Anonymous phone help for psychological crises, 24/7.", lu:"Anonym Telefonshëllef bei psycheschen Krisen, 24/7.", pt:"Ajuda telefónica anónima para crises psicológicas, 24/7." }, topics:["crisis","health"], urgency:"red", hours:"24/7", langs:["DE","FR","EN"], anonymous:true, free:true, url:"https://www.454545.lu", location:"Tout le Luxembourg" },
+  { id:2, name:"Croix-Rouge Helpline", phone:"2755", desc:{ de:"Beratung und Soforthilfe bei finanziellen Notlagen, sozialen Problemen und Lebenskrisen.", fr:"Aide et conseil en cas de difficultés financières et sociales.", en:"Counseling and immediate help for financial and social emergencies.", lu:"Berodung an Soforthëllef bei finanziellen Noutlagen.", pt:"Aconselhamento e ajuda imediata para emergências financeiras." }, topics:["money","crisis","housing"], urgency:"red", hours:"Mo–Fr 8:00–17:00", langs:["DE","FR","EN","PT"], anonymous:false, free:true, url:"https://www.croix-rouge.lu", location:"Luxembourg-Ville" },
+  { id:3, name:"Office Social – Gemeinde", desc:{ de:"Lokale Sozialberatung deiner Gemeinde. Hilfe bei Anträgen, Miete, Rechnungen und Alltagsproblemen.", fr:"Aide sociale locale de votre commune.", en:"Local social services from your municipality.", lu:"Lokal Sozialberodung vun denger Gemeng.", pt:"Serviços sociais locais do seu município." }, topics:["money","housing","family"], urgency:"yellow", hours:"Mo–Fr 9:00–12:00, 14:00–16:00", langs:["DE","FR","LU"], anonymous:false, free:true, location:"Jede Gemeinde" },
+  { id:4, name:"Caritas Luxembourg", desc:{ de:"Umfassende Beratung für Migranten, Obdachlose und Menschen in Not. Vor-Ort-Hilfe und Begleitung.", fr:"Conseil complet pour migrants, sans-abri et personnes en difficulté.", en:"Comprehensive support for migrants, homeless, and people in need.", lu:"Ëmfaassend Berodung fir Migranten an Leit an Nout.", pt:"Apoio abrangente para migrantes, sem-abrigo e necessitados." }, topics:["migration","housing","money"], urgency:"yellow", hours:"Mo–Fr 9:00–17:00", langs:["DE","FR","EN","PT","AR"], anonymous:false, free:true, url:"https://www.caritas.lu", location:"Luxembourg-Ville, Esch-sur-Alzette" },
+  { id:5, name:"ONA – Office National de l'Accueil", desc:{ de:"Staatliche Aufnahmestelle für Asylsuchende und Flüchtlinge. Unterkunft, Beratung, Integration.", fr:"Office d'accueil pour demandeurs d'asile et réfugiés.", en:"National reception office for asylum seekers and refugees.", lu:"Staatlech Opfangstell fir Asylsichend a Flüchtlingen.", pt:"Escritório nacional de acolhimento para requerentes de asilo." }, topics:["migration"], urgency:"yellow", hours:"Mo–Fr 8:30–11:30, 14:00–16:00", langs:["FR","EN","AR"], anonymous:false, free:true, url:"https://ona.gouvernement.lu", location:"Luxembourg-Ville" },
+  { id:6, name:"KJT – Kanner-Jugendtelefon", phone:"116111", desc:{ de:"Anonyme Telefonberatung für Kinder und Jugendliche bei allen Sorgen und Problemen.", fr:"Ligne d'aide anonyme pour enfants et jeunes.", en:"Anonymous helpline for children and young people.", lu:"Anonym Telefonberodung fir Kanner a Jugendlech.", pt:"Linha de ajuda anónima para crianças e jovens." }, topics:["youth","crisis","violence"], urgency:"red", hours:"Mo–Sa 11:00–23:00", langs:["DE","FR","EN","LU"], anonymous:true, free:true, url:"https://www.kjt.lu", location:"Tout le Luxembourg" },
+  { id:7, name:"Planning Familial", desc:{ de:"Beratung zu Sexualität, Verhütung, Schwangerschaft und Familienplanung. Vertraulich.", fr:"Conseil en sexualité, contraception et planning familial.", en:"Counseling on sexuality, contraception, and family planning.", lu:"Berodung zu Sexualitéit, Verhütung a Familljeplanning.", pt:"Aconselhamento sobre sexualidade, contracepção e planeamento familiar." }, topics:["family","health","youth"], urgency:"green", hours:"Mo–Fr 8:00–12:00, 13:30–17:00", langs:["DE","FR","EN","PT"], anonymous:true, free:true, url:"https://www.planningfamilial.lu", location:"Luxembourg-Ville, Esch-sur-Alzette, Ettelbruck" },
+  { id:8, name:"Femmes en Détresse", phone:"40 20 40 1", desc:{ de:"Hilfe für Frauen und Kinder, die von häuslicher Gewalt betroffen sind. Notunterkunft verfügbar.", fr:"Aide aux femmes et enfants victimes de violence domestique.", en:"Help for women and children affected by domestic violence. Shelter available.", lu:"Hëllef fir Fraen a Kanner, déi vun haislecher Gewalt betraff sinn.", pt:"Ajuda para mulheres e crianças vítimas de violência doméstica." }, topics:["violence","family","crisis"], urgency:"red", hours:"24/7", langs:["DE","FR","EN","PT"], anonymous:true, free:true, url:"https://www.fed.lu", location:"Luxembourg-Ville" },
+  { id:9, name:"Jugend- an Drogenhëllef", desc:{ de:"Beratung und Betreuung bei Suchtproblemen (Drogen, Alkohol, Spielsucht). Niederschwellig.", fr:"Aide et conseil en matière de dépendances.", en:"Counseling and support for addiction issues (drugs, alcohol, gambling).", lu:"Berodung a Betreiung bei Suchtproblemer.", pt:"Aconselhamento e apoio para problemas de dependência." }, topics:["addiction","health","youth"], urgency:"yellow", hours:"Mo–Fr 9:00–17:00", langs:["DE","FR","EN","LU"], anonymous:true, free:true, url:"https://www.jdh.lu", location:"Luxembourg-Ville, Esch-sur-Alzette" },
+  { id:10, name:"CNFL – Conseil National des Femmes", desc:{ de:"Rechtsberatung und Unterstützung für Frauen in allen Lebenslagen.", fr:"Conseil juridique et soutien pour les femmes.", en:"Legal advice and support for women in all life situations.", lu:"Rechtsberodung an Ënnerstëtzung fir Fraen.", pt:"Aconselhamento jurídico e apoio para mulheres." }, topics:["family","violence"], urgency:"green", hours:"Mo–Fr 9:00–12:00", langs:["DE","FR"], anonymous:false, free:true, location:"Luxembourg-Ville" },
+];
+
+// ── APP STATE ─────────────────────────────────────────────────
+let state = { lang:"de", search:"", topics:[], urgency:null, detail:null, langOpen:false };
+
+function t(key) { return TRANSLATIONS[state.lang][key] || key; }
+function tl(key) { return (TOPIC_LABELS[state.lang] || TOPIC_LABELS.de)[key] || key; }
+
+function getFiltered() {
+  return SERVICES.filter(s => {
+    if (state.urgency && s.urgency !== state.urgency) return false;
+    if (state.topics.length && !state.topics.some(t => s.topics.includes(t))) return false;
+    if (state.search.trim()) {
+      const q = state.search.toLowerCase();
+      const desc = (s.desc[state.lang] || s.desc.de).toLowerCase();
+      const name = s.name.toLowerCase();
+      const topicMatch = s.topics.some(t => tl(t).toLowerCase().includes(q));
+      if (!name.includes(q) && !desc.includes(q) && !topicMatch) return false;
+    }
+    return true;
+  }).sort((a,b) => ({red:0,yellow:1,green:2})[a.urgency] - ({red:0,yellow:1,green:2})[b.urgency]);
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  if (state.detail) { app.innerHTML = renderDetail(state.detail); }
+  else { app.innerHTML = renderList(); }
+  bindEvents();
+}
+
+function renderList() {
+  const filtered = getFiltered();
+  const topicKeys = Object.keys(TOPIC_LABELS.de);
+  return `
+    <header class="header">
+      <div class="header-top">
+        <div>
+          <div class="logo"><span class="logo-teal">sozial</span><span class="logo-navy">kompass.lu</span></div>
+          <div class="tagline">${t("subtitle")}</div>
+        </div>
+        <div class="lang-wrap">
+          <button class="lang-btn" id="langToggle">${LANG_FLAGS[state.lang]} ${state.lang.toUpperCase()} ▾</button>
+          <div class="lang-dropdown ${state.langOpen?"open":""}" id="langDropdown">
+            ${Object.keys(TRANSLATIONS).map(l => `<button class="lang-option ${l===state.lang?"active":""}" data-lang="${l}">${LANG_FLAGS[l]} ${l.toUpperCase()}</button>`).join("")}
+          </div>
+        </div>
+      </div>
+      <div class="emergency">
+        <span>🚨 ${t("emergency")}</span>
+        <a href="tel:112" class="emergency-call">112</a>
+      </div>
+    </header>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="${t("searchPlaceholder")}" value="${state.search}">
+      <button class="search-clear ${state.search?"visible":""}" id="searchClear">✕</button>
+    </div>
+
+    <div class="filters">
+      ${[{k:null,label:t("all"),cls:"all"},{k:"red",label:t("urgent"),cls:"red"},{k:"yellow",label:t("soon"),cls:"yellow"},{k:"green",label:t("info"),cls:"green"}].map(u =>
+        `<button class="urgency-btn ${state.urgency===u.k?"active-"+u.cls:""}" data-urgency="${u.k||""}">
+          ${u.k?`<span class="dot dot-${u.cls}"></span>`:""}${u.label}
+        </button>`
+      ).join("")}
+    </div>
+
+    <div class="topics">
+      ${topicKeys.map(k => `<button class="topic-chip ${state.topics.includes(k)?"active":""}" data-topic="${k}">${TOPIC_ICONS[k]} ${tl(k)}</button>`).join("")}
+    </div>
+
+    <div class="results-header">${filtered.length} ${t("results")}</div>
+
+    ${filtered.length === 0 ? `<div class="no-results">${t("noResults")}</div>` :
+      filtered.map((s,i) => `
+        <button class="card border-${s.urgency}" data-id="${s.id}" style="animation-delay:${0.05+i*0.04}s">
+          <div class="card-header">
+            <span class="card-name">${s.name}</span>
+            <span class="urgency-badge badge-${s.urgency}">
+              <span class="dot dot-${s.urgency}"></span>
+              ${s.urgency==="red"?t("urgent"):s.urgency==="yellow"?t("soon"):t("info")}
+            </span>
+          </div>
+          <div class="card-desc">${((s.desc[state.lang]||s.desc.de)).slice(0,100)}…</div>
+          <div class="card-bottom">
+            <div class="card-meta">
+              ${s.phone?`<span class="card-phone">📞 ${s.phone}</span>`:""}
+              <span>🕐 ${s.hours}</span>
+            </div>
+            <div class="card-tags">
+              ${s.topics.slice(0,3).map(tp => `<span class="mini-tag">${TOPIC_ICONS[tp]} ${tl(tp)}</span>`).join("")}
+              ${s.anonymous?`<span class="mini-tag">🔒</span>`:""}
+            </div>
+          </div>
+        </button>
+      `).join("")}
+
+    <footer class="footer">
+      <div class="footer-tagline">${t("tagline")}</div>
+      <div class="footer-demo">⚠️ ${t("demoNotice")}</div>
+    </footer>
+  `;
+}
+
+function renderDetail(s) {
+  return `
+    <button class="back-btn" id="backBtn">← ${t("back")}</button>
+    <div class="detail-card top-${s.urgency}">
+      <div class="detail-header">
+        <span class="detail-dot" style="background:var(--${s.urgency})"></span>
+        <span class="detail-name">${s.name}</span>
+      </div>
+      <div class="detail-desc">${s.desc[state.lang]||s.desc.de}</div>
+
+      ${s.phone?`<a href="tel:${s.phone.replace(/\s/g,"")}" class="call-btn"><span style="font-size:20px">📞</span> ${t("call")}: ${s.phone}</a>`:""}
+      ${s.url?`<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="web-btn">🌐 ${t("website")}</a>`:""}
+
+      <div class="meta-list">
+        <div class="meta-row"><span class="meta-icon">📍</span><span class="meta-val">${s.location}</span></div>
+        <div class="meta-row"><span class="meta-icon">🕐</span><span class="meta-val">${s.hours}</span></div>
+        <div class="meta-row"><span class="meta-icon">🗣️</span><span class="meta-val">${s.langs.map(l=>`${LANG_FLAGS[l.toLowerCase()]||""} ${l}`).join("  ")}</span></div>
+        <div class="meta-row">
+          ${s.anonymous?`<span class="badge-anon">🔒 ${t("anonymous")}</span>`:""}
+          ${s.free?`<span class="badge-free">✓ ${t("free")}</span>`:""}
+        </div>
+      </div>
+
+      <div class="detail-topics">
+        ${s.topics.map(tp => `<span class="detail-topic">${TOPIC_ICONS[tp]} ${tl(tp)}</span>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+// ── EVENT BINDING ─────────────────────────────────────────────
+function bindEvents() {
+  // Language toggle
+  const langToggle = document.getElementById("langToggle");
+  if (langToggle) langToggle.onclick = () => { state.langOpen = !state.langOpen; render(); };
+
+  // Language options
+  document.querySelectorAll(".lang-option").forEach(btn => {
+    btn.onclick = () => { state.lang = btn.dataset.lang; state.langOpen = false; render(); };
+  });
+
+  // Search
+  const input = document.getElementById("searchInput");
+  if (input) {
+    input.oninput = () => { state.search = input.value; render(); setTimeout(() => { const el = document.getElementById("searchInput"); if(el){el.focus(); el.selectionStart=el.selectionEnd=el.value.length;} }, 0); };
+  }
+  const clear = document.getElementById("searchClear");
+  if (clear) clear.onclick = () => { state.search = ""; render(); document.getElementById("searchInput")?.focus(); };
+
+  // Urgency
+  document.querySelectorAll(".urgency-btn").forEach(btn => {
+    btn.onclick = () => { state.urgency = btn.dataset.urgency || null; render(); };
+  });
+
+  // Topics
+  document.querySelectorAll(".topic-chip").forEach(btn => {
+    btn.onclick = () => {
+      const tp = btn.dataset.topic;
+      state.topics = state.topics.includes(tp) ? state.topics.filter(t=>t!==tp) : [...state.topics, tp];
+      render();
+    };
+  });
+
+  // Cards
+  document.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => { state.detail = SERVICES.find(s => s.id === +card.dataset.id); render(); window.scrollTo(0,0); };
+  });
+
+  // Back
+  const back = document.getElementById("backBtn");
+  if (back) back.onclick = () => { state.detail = null; render(); };
+
+  // Close lang dropdown on outside click
+  document.addEventListener("click", (e) => {
+    if (state.langOpen && !e.target.closest(".lang-wrap")) { state.langOpen = false; render(); }
+  }, { once: true });
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
